@@ -51,9 +51,15 @@ Dr. Christophe \textsc{Stoltz}\\
 \setcounter{page}{2}
 
 \section{Introduction}
-Data compression is key to modern communications: it is prevalent to every device we could think of \cite{Salomon2007}. To most people, it is vitally important to send and store as little information as possible to send it quicker and save space, without losing too much or any information. Data compression allow an input stream to be converted into an output stream with a smaller size. There are many specialized algorithms for certain applications. For example, arithmetic coding allows a sequence of data to be encoded in one code. The method begins with an interval, and shortens the interval based on the probability of each symbol in the sequence. High probability symbols shorten the interval less, and correspond to less bits in the output stream. Arithmetic coding has slight advantages to Huffman coding, as Huffman coding assigns integer codes to individual symbols. Huffman coding serves as the basis for several popular programs run on various platforms. It is a lossless data compression method which takes a set of symbols and their probabilities and returns a binary code (set of codewords) with minimum expected codeword length. Lastly, JPEG encoding is especially important for those who want to share and save images. It is a lossy coding technique, but the images do not appear to be compressed. The JPEG encoder is able to split the image into many uniformly sized blocks, transformed to the frequency domain, quantized, and encoded. In this report, we explore these three coding types, as algorithms in Matlab.
+Data compression is key to modern communications: it is prevalent to every device we could think of \cite{Salomon2007}. To most people, it is vitally important to send and store as little information as possible, to transfer it quicker and save space, without losing too much or any information. Data compression allows an input stream to be converted into an output stream with a smaller size. There are many specialized algorithms for certain applications. For example, arithmetic coding allows a sequence of data to be encoded in one short sequence. The method begins with an interval, and shortens the interval based on the probability of each symbol in the sequence. High probability symbols shorten the interval less, and correspond to less bits in the output stream. Another coding type, Huffman coding serves as the basis for several popular programs that run on various platforms. It is a lossless data compression method which takes a set of symbols and their probabilities and returns a binary code (set of codewords) with a minimum expected codeword length. Arithmetic coding has slight advantages to Huffman coding, as Huffman coding assigns integer codes to individual symbols. Lastly, JPEG encoding is especially important for those who want to share and save images. It is a lossy coding technique, but the images do not appear to be compressed. JPEG encoding splits an image into many uniformly sized blocks, transform them to the frequency domain, quantize, and encode them. In this report, we explore these three coding types, as algorithms in Matlab.
 
 \section{Arithmetic Coding}
+For implementing arithmetic coding in Matlab, two functions were written: 
+\begin{itemize}
+\item \texttt{arithmetic\char`_encoding\char`.m} takes in DNA alphabet, respective symbols probabilities, and sequence to code and outputs a binary stream of the sequence.
+\item \texttt{arithmetic\char`_decoding\char`.m} takes in the DNA alphabet, respective symbols' probability, and binary code (last entry in binary sequence) and outputs the decoded sequence.
+\end{itemize}
+
 \subsection{Arithmetic Encoding}
 Unlike other coding methods, arithmetic coding does not assign integer codes to individual symbols, but a long code for the entire stream \cite{Salomon2007}. The arithmetic coding function accepts a list of symbols, their respective probabilities, and a sequence to code. First, the probabilities (and respective symbols) are sorted from highest to lowest. Then, a high and low range are determined for each symbol, producing an interval. The sequence is then coded using the following three formulas:
 \begin{equation}
@@ -68,7 +74,7 @@ newlow = old low + range*lowrange(X)
 where oldlow is initialized to 0, oldhigh to 1, and \textit{X} is the symbol in the sequence to code. The newlow is saved in a binary stream to output. Next, the old high and low are replaced by the new high and low and the loop continues until the end of the sequence to code is reached. All values in this binary stream are values between [0,1). Only the last entry in the binary stream is required to decode the sequence, so the 0. is discarded and only the decimal part of the code is encoded in binary format to complete the encoding.
 
 \subsection{Arithmetic Decoding}
-Decoding begins by inputting the a list of symbols, their respective probabilities, and the last entry in the binary stream. First the binary formatted number is decoded into a decimal. Then, the probabilities (and respective symbols) are sorted from highest to lowest, and a high and low range are determined for each symbol, producing an interval like in the encoding process. Then the decoded sequence is calculated as follows: the decimal is checked to determine which interval it falls into and the corresponding symbol is the first entry in the decoded sequence. Then, the decimal is converted to a new decimal by:
+Decoding begins by inputting the a list of symbols, their respective probabilities, and the last entry in the binary stream. First the binary formatted number is decoded into a decimal. Then, the probabilities (and respective symbols) are sorted from highest to lowest, and a high and low range are determined for each symbol, producing the interval, like in the encoding process. Then the decoded sequence is calculated as follows: the decimal is checked to determine which interval it falls into and the corresponding symbol is the first entry in the decoded sequence. Then, the decimal is converted to a new decimal by:
  \begin{equation}
 newdecimal = \frac{olddecimal - lowrange(X)}{range(X)}
 \end{equation}
@@ -84,7 +90,7 @@ For implementing Huffman Coding in Matlab, two functions were written:
 \end{itemize}
 
 \section{Simplified JPEG Encoding}
-JPEG is the most common imaging format in the world. Matlab has many built-in functions in the image processing toolbox to convert images to JPEG, but in this section, we describe a method that takes the raw data and encodes the JPEG, using our own Huffman coding function.
+JPEG is the most common imaging format in the world. Matlab has many built-in functions in the image processing toolbox to convert images to JPEG, but in this section, we describe a method that takes the raw data and encodes the JPEG, using our own Huffman encoding function.
 \subsection{8x8 Block Extractor}
 An image is accepted into the function as an array. The image is first divided into non-overlapping blocks of 8 x 8 pixels. To ensure that the data can be divided, a condition resizes the image into a width and height of integer multiples of 8. Next, the gray levels of the image are shifted from unsigned to signed by subtracting \(2^{m-1}\) from every pixel in the image. Shifting reduces the dynamic range for the discrete cosine transform. To facilitate this, the number of gray levels is found, and then m is determined by 
 \begin{equation}
@@ -98,16 +104,18 @@ where F is an 8 x 8 block of the image, and H is a transformation matrix found t
 
 Each 8 x 8 block is then normalized and quantized using a predefined transformation normalization array \textit{Z}, as:
 \begin{equation}
-quantization= round(T/Z)
+quantization= round (\frac{T}{Z})
 \end{equation}
 and the quantization has the same dimensions as the original image. 
 
 \subsection{Zig-Zag Encoding}
-Zig-zag (entropy) encoding rearranges the pixels in each block so that the spatial frequency is increased, and often, long runs of zeros are found at the end, enabling the stream to be truncated. Each 8 x 8 block is divided into a one dimensional array of length 64, and the pixels are reordered using a zig-zag reordering pattern. The quantization is now a stream of 64 x total number of blocks.
+Zig-zag (entropy) encoding rearranges the pixels in each block so that the spatial frequency is increased, and often, long runs of zeros are found at the end, enabling the stream to be truncated. Each 8 x 8 block is divided into a one dimensional array of length 64, and the pixels are reordered using a zig-zag reordering pattern. The quantization is now a stream of 64 x (total number of blocks).
 
 \subsection{Conversion of quantized vectors into the JPEG defined bitstream}
 Each block in the quantization stream is then truncated after the last non-zero element to reduce the size of the data. An end of block symbol defined as the maximum value of the initial image plus one is defined to ensure that there are no repetitions of this symbol within the JPEG code. Each encoded and truncated block is appended by the end of block symbol and the next block added. This produces a one dimensional array of the shortened quantized streams, which is then encoded using the Huffman code as described earlier.
 
+\section{Conclusion}
+Data compression is a key part of image processing for effective communication, including for the storage and transmission of data. Arithmetic coding is vital for reducing the size of data. Although arithmetic encoding reduces the size of data more effectively than Huffman coding, Huffman is still the standard for JPEG encoding. In this project, we have successfully implemented arithmetic, Huffman and JPEG coding in Matlab. Writing these algorithms in Matlab allowed us to fully grasp the methods of each coding technique. In addition, it has advanced our skills in Matlab coding. For example, there was a precision problem while writing the arithmetic coding function. Using the function vpa() allowed us to overcome this difficulty. It has also allowed us to see the full potential of these compression techniques in the future for other image processing applications.
 \pagebreak
 
 \bibliography{MyCollection}

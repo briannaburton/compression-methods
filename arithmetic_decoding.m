@@ -1,6 +1,6 @@
 
 %The arithmetic_decoding function's inputs are the DNA alphabet, respective
-%symbols probabilities, and binary code (last entry in binary sequence),
+%symbols' probabilities, and binary code (last entry in binary sequence),
 %respectively. The function outputs the decoded sequence.
 
 function decoded_sequence = arithmetic_decoding(list_of_symbols, probabilities, decimal, size)

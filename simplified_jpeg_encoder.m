@@ -79,5 +79,16 @@ function huffman_encoded_jpeg = simplified_jpeg_encoder(array)
     
     %Use huffman encoding to encode the streams_together for the final
     %output
-    huffman_encoded_jpeg = huffman_image(streams_together)
+    
+    %Find the alphabet and probability vectors
+    alphabet = unique(streams_together);    %alphabet of unique values from original stream
+    x = sort(streams_together);             %sort the original stream
+    frequency = zeros(size(alphabet));      %blank list to store frequency of each values
+    for i = 1:length(alphabet)              %save the frequency into the vector t
+        frequency(i) = sum(x == alphabet(i));
+    end
+    probabilities = frequency/length(streams_together);   %covert t to probability vector
+    %Use huffman encoding to encode the streams_together for the final
+    %output
+    huffman_encoded_jpeg = huffman_encoding(probabilities, alphabet)
 end
