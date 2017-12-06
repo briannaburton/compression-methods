@@ -3,7 +3,7 @@
 %normalization/quantization on 8x8 pixel blocks of the image, encodes the
 %data, and outputs the final encoded image.
 
-function streams_together = simplified_jpeg_encoder(array)
+function huffman_encoded_jpeg = simplified_jpeg_encoder(array)
 
     %Ensure the array passed to the encoder is a matrix, is real, is
     %numeric, and is of made up of 8 bit integers. If not, output an error.
@@ -22,6 +22,7 @@ function streams_together = simplified_jpeg_encoder(array)
         array = imresize(array,[height, width]);
     end
     
+    %Find the number of grey levels in the image and determine the shift
     no_gray_levels = double(max(max(array))-min(min(array))) + 1.;
     m = log2(no_gray_levels);
     shift = 2^(m-1.);
@@ -33,7 +34,7 @@ function streams_together = simplified_jpeg_encoder(array)
     fun = @(block_struct) (H * block_struct.data * H');
     transformation = blockproc(array, [8 8], fun);
 
-    %Perform normalization and quantization using Z
+    %Perform normalization and quantization using Z on 8x8 blocks of data
     Z = [16 11 10 16 24 40 51 61;  % transformation normalization array
          12 12 14 19 26 58 60 55;   
          14 13 16 24 40 57 69 56; 
@@ -55,7 +56,7 @@ function streams_together = simplified_jpeg_encoder(array)
     quantiz = im2col(quantiz, [8 8], 'distinct');   % separate 8x8 blocks into 1d arrays
     quantiz = quantiz(order, :);                    % reorder column elements
 
-    %Truncate the stream (each column after the last non-zero element. Add
+    %Truncate the stream (each column after the last non-zero element). Add
     %the end of block symbol between streams, and save the result in the
     %array streams_together
     end_block = max(array(:)) + 1;  % create end-of-block symbol
@@ -65,8 +66,8 @@ function streams_together = simplified_jpeg_encoder(array)
     streams_together = zeros(numel(quantiz) + size(quantiz, 2), 1);   
     count = 0;
     for j = 1:num_blocks                        %vector to save the concantenated streams
-        i = find(quantiz(:, j), 1, 'last');   % find last non-zero element
-        if isempty(i)                   % check if there are no non-zero values
+        i = find(quantiz(:, j), 1, 'last');     % find last non-zero element
+        if isempty(i)                           % check if there are no non-zero values
             i = 0; 
         end 
         p = count + 1;
@@ -76,4 +77,7 @@ function streams_together = simplified_jpeg_encoder(array)
     end
     streams_together((count + 1):end) = [];            % delete unused portion of streams_together
     
+    %Use huffman encoding to encode the streams_together for the final
+    %output
+    huffman_encoded_jpeg = huffman_image(streams_together)
 end

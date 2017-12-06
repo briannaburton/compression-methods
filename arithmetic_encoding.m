@@ -3,7 +3,7 @@
 %symbols probabilities, and sequence to code, respectively. The function
 %outputs a binary stream of the sequence.
 
-function [binary_stream, binary] = arithmetic_encoding(list_of_symbols, probabilities, sequence_to_code)
+function binary_stream = arithmetic_encoding(list_of_symbols, probabilities, sequence_to_code)
 
     %Sort the probabilities and list of symbols in ascending order in case they are not
     list_prob_together = [probabilities;list_of_symbols];
@@ -39,14 +39,4 @@ function [binary_stream, binary] = arithmetic_encoding(list_of_symbols, probabil
         oldhigh = newhigh;
         oldlow = newlow;
     end
-    
-    %Binary encode the output
-    decimal = binary_stream(length(sequence_to_code));
-    dstr = num2str(decimal);
-    darray = zeros(1,numel(dstr-2));
-    for i=3:numel(dstr)
-        darray(i-2)=str2num(dstr(i));
-    end
-    
-    binary = de2bi (darray);
 end
